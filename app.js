@@ -1,8 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const routes = require('./routes/routes'); // Legacy routes
-const responseFormatter = require('./middleware/responseMiddleware');
-const errorHandler = require('./middleware/errorHandler');
+const responseFormatter = require('./middlewares/responseMiddleware');
+const {errorHandler} = require('./middlewares/errorMiddleware');
 // const securityMiddleware = require('./middleware/securityMiddleware');
 
 const helmet = require('helmet');
@@ -31,7 +31,10 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Handle preflight requests explicitly
-app.options('*', cors(corsOptions));
+// app.options('*', cors(corsOptions));
+app.options(/.*/, (req, res, next) => {
+  cors(corsOptions)(req, res, next);
+});
 
 // Body parsers
 app.use(express.json({ limit: '10kb' }));
