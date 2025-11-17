@@ -34,7 +34,9 @@ const createEpisode = async (episodeData) => {
   if (!season) {
     throw new NotFoundError("Season not found");
   }
-  
+   if (episodeData.status === 'active') {
+    await episodeModel.updateStatus();
+  }
   return await episodeModel.createEpisode(episodeData);
 };
 
@@ -50,7 +52,9 @@ const updateEpisode = async (id, episodeData) => {
       throw new NotFoundError("Season not found");
     }
   }
-  
+  if (episodeData.status === 'active') {
+    await episodeModel.updateStatus();
+  }
   await episodeModel.updateEpisode(id, episodeData);
   return await episodeModel.getEpisodeById(id);
 };

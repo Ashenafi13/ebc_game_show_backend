@@ -13,12 +13,21 @@ const getCompetitorById = async (id) => {
   return competitor;
 };
 
+const generateContestantCode = async () => {
+  const randomNumber = Math.floor(1000 + Math.random() * 9000);
+  return `CT-${randomNumber}`;
+};
+
+
+
+
 const createCompetitor = async (competitorData) => {
+   competitorData.code = await generateContestantCode();
   if (!competitorData.name) {
     throw new ValidationError("Competitor name is required");
   }
   if (!competitorData.code) {
-    throw new ValidationError("Competitor code is required");
+    throw new ValidationError("Something went wrong!");
   }
   
   // Check if code already exists

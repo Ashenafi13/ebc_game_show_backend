@@ -8,6 +8,19 @@ const getAllSeasons = async () => {
   return result.recordset;
 };
 
+const updateStatus = async () => {
+  const request = await pool.request();
+  request.input("status", sql.NVarChar(50), 'inactive');
+  const result = await request.query(`
+    UPDATE tbls_seasons 
+    SET status = @status 
+    WHERE status = 'active';
+  `);
+
+  return result;
+};
+
+
 const getSeasonById = async (id) => {
   const result = await pool
     .request()
@@ -62,5 +75,6 @@ module.exports = {
   createSeason,
   updateSeason,
   deleteSeason,
+  updateStatus 
 };
 

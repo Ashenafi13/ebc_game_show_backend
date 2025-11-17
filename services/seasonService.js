@@ -17,6 +17,7 @@ const createSeason = async (seasonData) => {
   if (!seasonData.name) {
     throw new ValidationError("Season name is required");
   }
+  await seasonModel.updateStatus();
   return await seasonModel.createSeason(seasonData);
 };
 
@@ -27,6 +28,9 @@ const updateSeason = async (id, seasonData) => {
   }
   if (!seasonData.name) {
     throw new ValidationError("Season name is required");
+  }
+  if (seasonData.status === 'active') {
+    await seasonModel.updateStatus();
   }
   await seasonModel.updateSeason(id, seasonData);
   return await seasonModel.getSeasonById(id);

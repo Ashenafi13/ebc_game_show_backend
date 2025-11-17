@@ -13,6 +13,17 @@ const getAllEpisodes = async () => {
   return result.recordset;
 };
 
+const updateStatus = async () => {
+  const request = await pool.request();
+  request.input("status", sql.NVarChar(50), 'inactive');
+  const result = await request.query(`
+    UPDATE tbls_episodes 
+    SET status = @status 
+    WHERE status = 'active';
+  `);
+
+  return result;
+};
 const getEpisodeById = async (id) => {
   const result = await pool
     .request()
@@ -87,5 +98,6 @@ module.exports = {
   createEpisode,
   updateEpisode,
   deleteEpisode,
+  updateStatus
 };
 
