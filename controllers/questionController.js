@@ -2,7 +2,10 @@ const questionService = require("../services/questionService");
 
 const getAllQuestions = async (req, res, next) => {
   try {
-    const data = await questionService.getAllQuestions();
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const data = await questionService.getAllQuestions(page, limit);
     res.success(data, "Questions retrieved successfully");
   } catch (error) {
     next(error);
@@ -20,7 +23,10 @@ const getQuestionById = async (req, res, next) => {
 
 const getQuestionsByCategory = async (req, res, next) => {
   try {
-    const data = await questionService.getQuestionsByCategory(req.params.categoryId);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const data = await questionService.getQuestionsByCategory(req.params.categoryId, page, limit);
     res.success(data, "Questions retrieved successfully");
   } catch (error) {
     next(error);

@@ -4,8 +4,16 @@ const categoryModel = require("../models/questionCategoryModel");
 const rewardTypeModel = require("../models/rewardTypeModel");
 const { ValidationError, NotFoundError } = require("../utils/errors");
 
-const getAllQuestions = async () => {
-  return await questionModel.getAllQuestions();
+const getAllQuestions = async (page = 1, limit = 10) => {
+  const result = await questionModel.getAllQuestions(page, limit);
+
+  // Get choices for each question
+  for (const question of result.data) {
+    const choices = await chooseModel.getChoosesByQuestionId(question.id);
+    question.choices = choices;
+  }
+
+  return result;
 };
 
 const getQuestionById = async (id) => {
@@ -21,12 +29,21 @@ const getQuestionById = async (id) => {
   return question;
 };
 
-const getQuestionsByCategory = async (categoryId) => {
+const getQuestionsByCategory = async (categoryId, page = 1, limit = 10) => {
   const category = await categoryModel.getCategoryById(categoryId);
   if (!category) {
     throw new NotFoundError("Category not found");
   }
-  return await questionModel.getQuestionsByCategory(categoryId);
+
+  const result = await questionModel.getQuestionsByCategory(categoryId, page, limit);
+
+  // Get choices for each question
+  for (const question of result.data) {
+    const choices = await chooseModel.getChoosesByQuestionId(question.id);
+    question.choices = choices;
+  }
+
+  return result;
 };
 
 const createQuestion = async (questionData) => {

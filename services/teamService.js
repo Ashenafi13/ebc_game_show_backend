@@ -4,7 +4,15 @@ const competitorModel = require("../models/competitorModel");
 const { ValidationError, NotFoundError } = require("../utils/errors");
 
 const getAllTeams = async () => {
-  return await teamModel.getAllTeams();
+  const teams = await teamModel.getAllTeams();
+
+  // Get team members for each team
+  for (const team of teams) {
+    const members = await teamCompetitorModel.getMappingsByTeamId(team.id);
+    team.members = members;
+  }
+
+  return teams;
 };
 
 const getTeamById = async (id) => {

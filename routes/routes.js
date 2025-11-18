@@ -11,6 +11,7 @@ const rewardTypeRoutes = require('./rewardTypeRoutes');
 const competitorRoutes = require('./competitorRoutes');
 const teamRoutes = require('./teamRoutes');
 const episodeQuestionRoutes = require('./episodeQuestionRoutes');
+const competitionRoutes = require('./competitionRoutes');
 
 // Auth routes (public)
 router.post('/register', authController.register);
@@ -25,5 +26,6 @@ router.use('/reward-types', rewardTypeRoutes);
 router.use('/competitors', competitorRoutes);
 router.use('/teams', teamRoutes);
 router.use('/episode-questions', episodeQuestionRoutes);
+router.use('/competitions', competitionRoutes);
 
 module.exports = router;

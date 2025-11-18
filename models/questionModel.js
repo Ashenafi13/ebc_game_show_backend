@@ -1,11 +1,26 @@
 const { pool } = require("../config/db");
 const sql = require("mssql");
 
-const getAllQuestions = async () => {
-  const result = await pool
+const getAllQuestions = async (page = 1, limit = 10) => {
+  const offset = (page - 1) * limit;
+
+  // Get total count
+  const countResult = await pool
     .request()
     .query(`
-      SELECT q.*, 
+      SELECT COUNT(*) as total
+      FROM tbls_questions q
+    `);
+
+  const total = countResult.recordset[0].total;
+
+  // Get paginated results
+  const result = await pool
+    .request()
+    .input("limit", sql.Int, limit)
+    .input("offset", sql.Int, offset)
+    .query(`
+      SELECT q.*,
              c.name as categoryName,
              r.name as rewardTypeName,
              r.measurement as rewardMeasurement
@@ -13,8 +28,19 @@ const getAllQuestions = async () => {
       LEFT JOIN tbls_questions_categories c ON q.categoryId = c.id
       LEFT JOIN tbls_reward_types r ON q.rewardType = r.id
       ORDER BY q.createdAt DESC
+      OFFSET @offset ROWS
+      FETCH NEXT @limit ROWS ONLY
     `);
-  return result.recordset;
+
+  return {
+    data: result.recordset,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    }
+  };
 };
 
 const getQuestionById = async (id) => {
@@ -34,12 +60,29 @@ const getQuestionById = async (id) => {
   return result.recordset[0];
 };
 
-const getQuestionsByCategory = async (categoryId) => {
-  const result = await pool
+const getQuestionsByCategory = async (categoryId, page = 1, limit = 10) => {
+  const offset = (page - 1) * limit;
+
+  // Get total count for this category
+  const countResult = await pool
     .request()
     .input("categoryId", sql.BigInt, categoryId)
     .query(`
-      SELECT q.*, 
+      SELECT COUNT(*) as total
+      FROM tbls_questions q
+      WHERE q.categoryId = @categoryId
+    `);
+
+  const total = countResult.recordset[0].total;
+
+  // Get paginated results
+  const result = await pool
+    .request()
+    .input("categoryId", sql.BigInt, categoryId)
+    .input("limit", sql.Int, limit)
+    .input("offset", sql.Int, offset)
+    .query(`
+      SELECT q.*,
              c.name as categoryName,
              r.name as rewardTypeName
       FROM tbls_questions q
@@ -47,8 +90,19 @@ const getQuestionsByCategory = async (categoryId) => {
       LEFT JOIN tbls_reward_types r ON q.rewardType = r.id
       WHERE q.categoryId = @categoryId
       ORDER BY q.createdAt DESC
+      OFFSET @offset ROWS
+      FETCH NEXT @limit ROWS ONLY
     `);
-  return result.recordset;
+
+  return {
+    data: result.recordset,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    }
+  };
 };
 
 const createQuestion = async (questionData) => {

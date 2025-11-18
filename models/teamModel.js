@@ -36,13 +36,15 @@ const getTeamWithCompetitors = async (id) => {
 const createTeam = async (teamData) => {
   const request = await pool.request();
   request.input("name", sql.NVarChar, teamData.name);
+  request.input("seasonId", sql.BigInt(50), teamData.seasonId || '0');
+  request.input("color", sql.NVarChar(50), teamData.color || '');
   request.input("createdAt", sql.DateTime, new Date());
   request.input("updatedAt", sql.DateTime, new Date());
 
   const result = await request.query(`
-    INSERT INTO tbls_teams (name, createdAt, updatedAt) 
+    INSERT INTO tbls_teams (name,seasonId,color, createdAt, updatedAt) 
     OUTPUT INSERTED.id
-    VALUES (@name, @createdAt, @updatedAt);
+    VALUES (@name, @seasonId, @color, @createdAt, @updatedAt);
   `);
 
   return result.recordset[0];
@@ -52,11 +54,13 @@ const updateTeam = async (id, teamData) => {
   const request = await pool.request();
   request.input("id", sql.BigInt, id);
   request.input("name", sql.NVarChar, teamData.name);
+  request.input("color", sql.NVarChar(50), teamData.color || '');
+  request.input("seasonId", sql.BigInt(50), teamData.seasonId || '0');
   request.input("updatedAt", sql.DateTime, new Date());
 
   const result = await request.query(`
     UPDATE tbls_teams 
-    SET name = @name, updatedAt = @updatedAt 
+    SET name = @name, color = @color, updatedAt = @updatedAt, seasonId = @seasonId
     WHERE id = @id;
   `);
 
