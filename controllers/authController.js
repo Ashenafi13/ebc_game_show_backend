@@ -19,7 +19,18 @@ const register = async (req, res, next) => {
   }
 };
 
+const getProfile = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const data = await authService.getProfile(userId);
+    res.success(data, "success");
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   login,
   register,
+  getProfile
 };

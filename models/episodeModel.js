@@ -5,10 +5,12 @@ const getAllEpisodes = async () => {
   const result = await pool
     .request()
     .query(`
-      SELECT e.*, s.name as seasonName 
+      SELECT e.*, s.name as seasonName
       FROM tbls_episodes e
       LEFT JOIN tbls_seasons s ON e.seasonId = s.id
-      ORDER BY e.createdAt DESC
+      ORDER BY
+        CASE WHEN e.status = 'active' THEN 0 ELSE 1 END,
+        e.createdAt DESC
     `);
   return result.recordset;
 };
@@ -42,9 +44,11 @@ const getEpisodesBySeasonId = async (seasonId) => {
     .request()
     .input("seasonId", sql.BigInt, seasonId)
     .query(`
-      SELECT * FROM tbls_episodes 
+      SELECT * FROM tbls_episodes
       WHERE seasonId = @seasonId
-      ORDER BY createdAt DESC
+      ORDER BY
+        CASE WHEN status = 'active' THEN 0 ELSE 1 END,
+        createdAt DESC
     `);
   return result.recordset;
 };

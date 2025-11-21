@@ -63,7 +63,21 @@ const getCompetitionsBySeasonId = async (seasonId) => {
 };
 
 const createCompetition = async (competitionData) => {
-  const request = await pool.request();
+  // Check if competition already exists with same seasonId and episodeId
+  const checkRequest = pool.request();
+  checkRequest.input("episodeId", sql.BigInt, competitionData.episodeId);
+  checkRequest.input("seasonId", sql.BigInt, competitionData.seasonId);
+
+  const existingCompetition = await checkRequest.query(`
+    SELECT id FROM tbls_competitions
+    WHERE episodeId = @episodeId AND seasonId = @seasonId
+  `);
+
+  if (existingCompetition.recordset.length > 0) {
+    throw new Error('Competition with this seasonId and episodeId already exists');
+  }
+
+  const request = pool.request();
   request.input("episodeId", sql.BigInt, competitionData.episodeId);
   request.input("seasonId", sql.BigInt, competitionData.seasonId);
   request.input("teams", sql.NVarChar(sql.MAX), JSON.stringify(competitionData.teams));
@@ -71,7 +85,7 @@ const createCompetition = async (competitionData) => {
   request.input("updatedAt", sql.DateTime, new Date());
 
   const result = await request.query(`
-    INSERT INTO tbls_competitions (episodeId, seasonId, teams, createdAt, updatedAt) 
+    INSERT INTO tbls_competitions (episodeId, seasonId, teams, createdAt, updatedAt)
     OUTPUT INSERTED.id
     VALUES (@episodeId, @seasonId, @teams, @createdAt, @updatedAt);
   `);
@@ -80,7 +94,22 @@ const createCompetition = async (competitionData) => {
 };
 
 const updateCompetition = async (id, competitionData) => {
-  const request = await pool.request();
+  // Check if another competition exists with same seasonId and episodeId (excluding current record)
+  const checkRequest = pool.request();
+  checkRequest.input("id", sql.BigInt, id);
+  checkRequest.input("episodeId", sql.BigInt, competitionData.episodeId);
+  checkRequest.input("seasonId", sql.BigInt, competitionData.seasonId);
+
+  const existingCompetition = await checkRequest.query(`
+    SELECT id FROM tbls_competitions
+    WHERE episodeId = @episodeId AND seasonId = @seasonId AND id != @id
+  `);
+
+  if (existingCompetition.recordset.length > 0) {
+    throw new Error('Another competition with this seasonId and episodeId already exists');
+  }
+
+  const request = pool.request();
   request.input("id", sql.BigInt, id);
   request.input("episodeId", sql.BigInt, competitionData.episodeId);
   request.input("seasonId", sql.BigInt, competitionData.seasonId);
@@ -88,8 +117,8 @@ const updateCompetition = async (id, competitionData) => {
   request.input("updatedAt", sql.DateTime, new Date());
 
   const result = await request.query(`
-    UPDATE tbls_competitions 
-    SET episodeId = @episodeId, seasonId = @seasonId, teams = @teams, updatedAt = @updatedAt 
+    UPDATE tbls_competitions
+    SET episodeId = @episodeId, seasonId = @seasonId, teams = @teams, updatedAt = @updatedAt
     WHERE id = @id;
   `);
 

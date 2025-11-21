@@ -18,6 +18,14 @@ const getUserAll = async () => {
   return result.recordset;
 };
 
+const getUserById = async (id) => {
+  const result = await pool
+    .request()
+    .input("id", sql.Int, id)
+    .query("SELECT * FROM tbls_users WHERE id = @id");
+
+  return result.recordset[0];
+};
 const createUser = async (userData) => {
   const request = await pool.request();
   // Bind each field from userData to the request
@@ -68,4 +76,5 @@ module.exports = {
   createUser,
   updateUser,
   deleteUser,
+  getUserById
 };

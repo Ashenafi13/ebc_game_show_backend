@@ -4,7 +4,12 @@ const sql = require("mssql");
 const getAllSeasons = async () => {
   const result = await pool
     .request()
-    .query("SELECT * FROM tbls_seasons ORDER BY createdAt DESC");
+    .query(`
+      SELECT * FROM tbls_seasons
+      ORDER BY
+        CASE WHEN status = 'active' THEN 0 ELSE 1 END,
+        createdAt DESC
+    `);
   return result.recordset;
 };
 

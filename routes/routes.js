@@ -12,6 +12,7 @@ const competitorRoutes = require('./competitorRoutes');
 const teamRoutes = require('./teamRoutes');
 const episodeQuestionRoutes = require('./episodeQuestionRoutes');
 const competitionRoutes = require('./competitionRoutes');
+const userRoutes = require('./userRoutes');
 
 // Auth routes (public)
 router.post('/register', authController.register);
@@ -19,6 +20,7 @@ router.post('/login', authController.login);
 
 // Control Panel API routes (protected)
 router.use('/seasons', seasonRoutes);
+router.use('/user', userRoutes);
 router.use('/episodes', episodeRoutes);
 router.use('/questions', questionRoutes);
 router.use('/categories', categoryRoutes);

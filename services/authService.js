@@ -14,7 +14,7 @@ const register =  async (userData) => {
 
    const checkUser = await userModel.getUserByUsername(userData.username);
   if (checkUser) {
-    throw new Error("ተጠቃሚው ከዚህ በፊት ተመዝግቧል!!");
+    throw new Error("The username is already taken!!");
   }
 
   const hashedPassword = await bcrypt.hash(userbody.password, 8);
@@ -28,11 +28,11 @@ const register =  async (userData) => {
 const login = async (userData) => {
   const user = await userModel.getUserByUsername(userData.username);
   if (!user) {
-    throw new Error("ተጠቃሚው አልተመዘገበም!!");
+    throw new Error("account not found");
   }
   const isMatch = await bcrypt.compare(userData.password, user.password);
   if (!isMatch) {
-    throw new Error("የይለፍ ቃል የተሳሳተ ነው!!");
+    throw new Error("invalid credentials");
   }
   const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
     expiresIn: "1d",
@@ -42,7 +42,17 @@ const login = async (userData) => {
   return user;
 }
 
+const getProfile = async (id) => {
+  const user = await userModel.getUserById(id);
+  if (!user) {
+    throw new Error("account not found");
+  }
+  delete user.password;
+  return user;
+}
+
 module.exports = {
   register,
   login,
+  getProfile
 };
